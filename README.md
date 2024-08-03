@@ -1,3 +1,26 @@
+## Error Tracking
+
+All errors, scores, and levels are documented in a Google Sheet. Please refer to the link below for details:
+
+[Google Sheet with Error Details](https://docs.google.com/spreadsheets/d/16ScCOwMK3-w_0bwsonJMzUfEJoPjh0bCA3cvub_SEyc/edit?usp=sharing)
+
+Please ensure that you read the README and rulebook carefully before commencing. The necessary domain files and data are provided in the repository.
+
+### Instructions
+
+1. Read the README and rulebook: Make sure to review these documents before starting.
+2. Access the Google Sheet: Use the provided link to review error details and other relevant information.
+
+### Deliverables
+
+- Attach the link to the Google Sheet in the README file in the specified format.
+- Ensure that the access settings are set to “Anyone with the link” to allow proper visibility.
+
+git add README.md
+git commit -m "Added link to Google Sheet with error details"
+git push
+
+
 # Breaking Bug - Machine Learning Repository
 
 <img src="https://images.prismic.io/ieeemuj/Zqu58B5LeNNTxuyE_BreakingBugBanner.png?auto=format,compress" alt="Breaking Bug Poster">
