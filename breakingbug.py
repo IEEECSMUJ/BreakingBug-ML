@@ -1,11 +1,8 @@
-
-# import libraries
-
-# 1. to handle the data
+# 1. To handle the data
 import pandas as pd
 import numpy as np
 
-# 2. To Viusalize the data
+# 2. To Visualize the data
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
@@ -14,31 +11,31 @@ from matplotlib.colors import ListedColormap
 
 # 3. To preprocess the data
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
-from sklearn.impute import SimpleImputer, KNNImputer
 
-# 4. import Iterative imputer
+# 4. Import Iterative imputer
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
+from sklearn.impute import SimpleImputer, IterativeImputer
 
 # 5. Machine Learning
-from sklearn.model import train_test_split,GridSearch, cross_val
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 
 # 6. For Classification task.
-from sklearn import LogisticRegressions
-from sklearn import KNN
-from sklearn import SVC_Classifier
-from sklearn import DecisionTree, plot_tree_regressor
-from sklearn import RandomForestRegressor, AdaBoost, GradientBoost
-from xgboost import XG
-from lightgbm import LGBM
-from sklearn import Gaussian
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.naive_bayes import GaussianNB
 
 # 7. Metrics
-from sklearn.metrics import accuracy, confusion, classification
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, mean_absolute_error, mean_squared_error, r2_score
 
 # 8. Ignore warnings
 import warnings
 warnings.filterwarnings('ignore')
+
 
 
 
@@ -68,33 +65,35 @@ import seaborn as sns
 custom_colors = ["#FF5733", "#3366FF", "#33FF57"]  # Example colors, you can adjust as needed
 
 # Plot the histogram with custom colors
-sns.histplot(df['age'], kde=True, color="#FF5733", palette=custom_colors)
+sns.histplot(df['age'], kde=True, color="#FF5733")
+
 
 
 # Plot the mean, Median and mode of age column using sns
 sns.histplot(df['age'], kde=True)
-plt.axvline(df['age'].mean(), color='Red')
-plt.axvline(df['age'].median(), color= 'Green')
-plt.axvline(df['age'].mode()[0], color='Blue')
+plt.axvline(df['age'].mean(), color='Red', label='Mean')
+plt.axvline(df['age'].median(), color='Green', label='Median')
+plt.axvline(df['age'].mode()[0], color='Blue', label='Mode')
+plt.legend()
 
 # print the value of mean, median and mode of age column
-print('Mean', df['age'].mean())
-print('Median', df['age'].median())
-print('Mode', df['age'].mode())
-
+print('Mean:', df['age'].mean())
+print('Median:', df['age'].median())
+print('Mode:', df['age'].mode()[0])
 
 # plot the histogram of age column using plotly and coloring this by sex
 
-fig = px.histogram(data_frame=df, x='age', color= 'sex')
+fig = px.histogram(data_frame=df, x='age', color='sex')
 fig.show()
+
 
 # Find the values of sex column
 df['sex'].value_counts()
 
 # calculating the percentage fo male and female value counts in the data
 
-male_count = 726
-female_count = 194
+male_count = df['sex'].value_counts()[1]
+female_count = df['sex'].value_counts()[0] 
 
 total_count = male_count + female_count
 
@@ -110,14 +109,11 @@ print(f'Female percentage in the data : {female_percentages:.2f}%')
 difference_percentage = ((male_count - female_count)/female_count) * 100
 print(f'Males are {difference_percentage:.2f}% more than female in the data.')
 
-
-726/194
-
 # Find the values count of age column grouping by sex column
 df.groupby('sex')['age'].value_counts()
 
 # find the unique values in the dataset column
-df['dataseet'].counts()
+df['dataset'].value_counts()
 
 # plot the countplot of dataset column
 fig =px.bar(df, x='dataset', color='sex')
@@ -133,18 +129,18 @@ fig.show()
 
 # print the mean median and mode of age column grouped by dataset column
 print("___________________________________________________________")
-print ("Mean of the dataset: ",df('data')['age'].mean())
+print("Mean of the dataset: ", df.groupby('dataset')['age'].mean())
 print("___________________________________________________________")
-print ("Median of the dataset: ",df('data')['age'].median())
+print("Median of the dataset: ", df.groupby('dataset')['age'].median())
 print("___________________________________________________________")
-print ("Mode of the dataset: ",df('data')['age'].(pd.Series.mode))
+print("Mode of the dataset: ", df.groupby('dataset')['age'].apply(lambda x: x.mode()[0]))
 print("___________________________________________________________")
 
 # value count of cp column
 df['cp'].value_counts()
 
 # count plot of cp column by sex column
-sns.countplot(df, x='cp', hue= 'sex')
+sns.countplot(x='cp', hue= 'sex', data=df)
 
 # count plot of cp column by dataset column
 sns.countplot(df,x='cp',hue='dataset')
@@ -185,12 +181,7 @@ df.info()
 imputer2 = IterativeImputer(max_iter=10, random_state=42)
 
 # fit transform on ca,oldpeak, thal,chol and thalch columns
-df['ca'] = imputer_transform(ca)
-df['oldpeak']= imputer_transform(oldpeak)
-df['chol'] = imputer_transform(chol)
-df['thalch'] = imputer_transform(thalch)
-
-
+df[['ca', 'oldpeak', 'chol', 'thalach']] = imputer2.fit_transform(df[['ca', 'oldpeak', 'chol', 'thalach']])
 
 # let's check again for missing values
 (df.isnull().sum()/ len(df)* 100).sort_values(ascending=False)
@@ -203,149 +194,102 @@ df['thal'].value_counts()
 df.tail()
 
 # find missing values.
-df.null().sum()[df.null()()<0].values(ascending=true)
-
-
-
+df.isnull().sum().sort_values(ascending=False)
 missing_data_cols = df.isnull().sum()[df.isnull().sum()>0].index.tolist()
-
 missing_data_cols
 
-# find categorical Columns
-cat_cols = df.select_dtypes(include='object').columns.tolist()
-cat_cols
+# Identifying categorical and numerical columns
+cat_cols = df.select_dtypes(include=['object']).columns.tolist()
+num_cols = df.select_dtypes(exclude=['object']).columns.tolist()
 
-# find Numerical Columns
-Num_cols = df.select_dtypes(exclude='object').columns.tolist()
-Num_cols
-
-print(f'categorical Columns: {cat_cols}')
-print(f'numerical Columns: {Num_cols}')
+print(f'Categorical Columns: {cat_cols}')
+print(f'Numerical Columns: {num_cols}')
 
 # FInd columns
 categorical_cols = ['thal', 'ca', 'slope', 'exang', 'restecg','thalch', 'chol', 'trestbps']
 bool_cols = ['fbs']
 numerical_cols = ['oldpeak','age','restecg','fbs', 'cp', 'sex', 'num']
 
-# This function imputes missing values in categorical columnsdef impute_categorical_missing_data(passed_col):
-passed_col = categorical_cols
-def impute_categorical_missing_data(wrong_col):
+def impute_categorical_missing_data(col):
+    # Identify rows with missing and non-missing values in the given column
+    df_null = df[df[col].isnull()]
+    df_not_null = df[df[col].notnull()]
 
-    df_null = df[df[passed_col].isnull()]
-    df_not_null = df[df[passed_col].notnull()]
+    # Separate features and target variable
+    X = df_not_null.drop(col, axis=1)
+    y = df_not_null[col]
 
-    X = df_not_null.drop(passed_col, axis=1)
-    y = df_not_null[passed_col]
-
-    other_missing_cols = [col for col in missing_data_cols if col != passed_col]
+    # Identify other columns with missing values
+    other_missing_cols = [c for c in missing_data_cols if c != col]
 
     label_encoder = LabelEncoder()
-        for cols in Y.columns:
-           if Y[col].dtype == 'object' :
-               Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
-
-    if passed_col in bool_cols:
+    if col in bool_cols:
         y = label_encoder.fit_transform(y)
 
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
-    for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
-            X[col] = imputed_values[:, 0]
-        else:
-            pass
+    # Initialize the Iterative Imputer
+    imputer = IterativeImputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
 
+    # Impute missing values in other columns
+    for other_col in other_missing_cols:
+        X[other_col] = imputer.fit_transform(df_not_null[[other_col]])
+
+    # Split data for training and testing
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    rf_classifier = RandomForestClassifier()
-
+    # Initialize and train the classifier
+    rf_classifier = RandomForestClassifier(random_state=42)
     rf_classifier.fit(X_train, y_train)
 
+    # Predict on the test set and calculate accuracy
     y_pred = rf_classifier.predict(X_test)
-
     acc_score = accuracy_score(y_test, y_pred)
+    print(f"The feature '{col}' has been imputed with {round(acc_score * 100, 2)}% accuracy\n")
 
-    print("The feature '"+ passed_col+ "' has been imputed with", round((acc_score * 100), 2), "accuracy\n")
+    # Predict missing values in the original dataframe
+    X_null = df_null.drop(col, axis=1)
 
-    X = df_null.drop(passed_col, axis=1)
+    # Impute missing values in other columns for null set
+    for other_col in other_missing_cols:
+        X_null[other_col] = imputer.transform(df_null[[other_col]])
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    df_null[col] = rf_classifier.predict(X_null)
 
-    for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
-            X[col] = imputed_values[:, 0]
-
-    if len(df_null) < 0:
-        df[passed] = classifier.predict(X)
-        if passed in cols:
-            df[passed] = df[passed].map({0: False, 1: True})
-        else:
-            pass
-    else:
-        pass
-
+    # Concatenate dataframes
     df_combined = pd.concat([df_not_null, df_null])
 
-    return df_combined[passed_col]
+    return df_combined[col]
 
-def impute_continuous_missing_data(passed_col):
+def impute_continuous_missing_data(col):
+    df_null = df[df[col].isnull()]
+    df_not_null = df[df[col].notnull()]
 
-    df_null = df[df[passed_col].isnull()]
-    df_not_null = df[df[passed_col].notnull()]
+    X = df_not_null.drop(col, axis=1)
+    y = df_not_null[col]
 
-    X = df_not_null.drop(passed_col, axis=1)
-    y = df_not_null[passed_col]
+    other_missing_cols = [c for c in missing_data_cols if c != col]
 
-    other_missing_cols = [col for col in missing_data_cols if col != passed_col]
+    imputer = IterativeImputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
 
-    label_encoder = LabelEncoder()
-
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
-
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
-
-    for col in other_missing_cols:
-        for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
+    for other_col in other_missing_cols:
+        X[other_col] = imputer.fit_transform(df_not_null[other_col].values.reshape(-1, 1))
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     rf_regressor = RandomForestRegressor()
-
     rf_regressor.fit(X_train, y_train)
-
     y_pred = rf_regressor.predict(X_test)
 
     print("MAE =", mean_absolute_error(y_test, y_pred), "\n")
     print("RMSE =", mean_squared_error(y_test, y_pred, squared=False), "\n")
     print("R2 =", r2_score(y_test, y_pred), "\n")
 
-    X = df_null.drop(passed_col, axis=1)
-
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
-
-    for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
-            X[col] = imputed_values[:, 0]
-        else:
-            pass
-
-    if len(df_null) > 0:
-        df_not_null[wrong_col] = rf_classifer.predict(X_train)
-    else:
-        pass
+    X_null = df_null.drop(col, axis=1)
+    df_null[col] = rf_regressor.predict(X_null)
 
     df_combined = pd.concat([df_not_null, df_null])
 
-    return df_combined[passed_col]
+    return df_combined[col]
+
 
 df.isnull().sum().sort_values(ascending=False)
 
@@ -358,7 +302,7 @@ for col in missing_data_cols:
     print("Missing Values", col, ":", str(round((df[col].isnull().sum() / len(df)) * 100, 2))+"%")
     if col in categorical_cols:
         df[col] = impute_categorical_missing_data(col)
-    elif col in numeric_cols:
+    elif col in num_cols:
         df[col] = impute_continuous_missing_data(col)
     else:
         pass
