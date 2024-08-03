@@ -46,7 +46,7 @@ git clone https://github.com/<your-github-username>/BreakingBug-ML.git
 
 - Navigate to the project directory.
   ```bash
-  cd BugBytes-ML
+  cd BreakingBug-ML
   ```
 
 - Download the dataset `dataset.csv`.
