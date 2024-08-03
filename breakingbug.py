@@ -21,7 +21,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
 # 5. Machine Learning
-from sklearn.model import train_test_split,GridSearch, cross_val
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 
 # 6. For Classification task.
 from sklearn import LogisticRegressions
@@ -30,7 +30,7 @@ from sklearn import SVC_Classifier
 from sklearn import DecisionTree, plot_tree_regressor
 from sklearn import RandomForestRegressor, AdaBoost, GradientBoost
 from xgboost import XG
-from lightgbm import LGBM
+from lightgbm import LGBMClassifier
 from sklearn import Gaussian
 
 # 7. Metrics
@@ -137,7 +137,7 @@ print ("Mean of the dataset: ",df('data')['age'].mean())
 print("___________________________________________________________")
 print ("Median of the dataset: ",df('data')['age'].median())
 print("___________________________________________________________")
-print ("Mode of the dataset: ",df('data')['age'].(pd.Series.mode))
+print ("Mode of the dataset: ",df('data')['age'].pd.Series.mode)
 print("___________________________________________________________")
 
 # value count of cp column
@@ -185,10 +185,10 @@ df.info()
 imputer2 = IterativeImputer(max_iter=10, random_state=42)
 
 # fit transform on ca,oldpeak, thal,chol and thalch columns
-df['ca'] = imputer_transform(ca)
-df['oldpeak']= imputer_transform(oldpeak)
-df['chol'] = imputer_transform(chol)
-df['thalch'] = imputer_transform(thalch)
+df['ca'] = imputer2()
+df['oldpeak']= imputer2()
+df['chol'] = imputer2()
+df['thalch'] = imputer2()
 
 
 
@@ -203,7 +203,7 @@ df['thal'].value_counts()
 df.tail()
 
 # find missing values.
-df.null().sum()[df.null()()<0].values(ascending=true)
+df.null().sum()[df.null()()<0].values(ascending=True)
 
 
 
@@ -240,24 +240,24 @@ def impute_categorical_missing_data(wrong_col):
     other_missing_cols = [col for col in missing_data_cols if col != passed_col]
 
     label_encoder = LabelEncoder()
-        for cols in Y.columns:
-           if Y[col].dtype == 'object' :
-               Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+           if y[col].dtype == 'object' :
+               y[col] = label_encoder.fit_transform(y[col].astype(str))
 
     if passed_col in bool_cols:
         y = label_encoder.fit_transform(y)
 
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
+    imputer = imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
     for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
+            cols_with_missing_value = y[col].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
             X[col] = imputed_values[:, 0]
-        else:
-            pass
+    else:
+        pass
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    rf_classifier = RandomForestClassifier()
+    rf_classifier = RandomForestRegressor()
 
     rf_classifier.fit(X_train, y_train)
 
@@ -269,19 +269,19 @@ def impute_categorical_missing_data(wrong_col):
 
     X = df_null.drop(passed_col, axis=1)
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+        if y[col].dtype == 'object' :
+            y[col] = label_encoder.fit_transform(y[col].astype(str))
 
     for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
+            cols_with_missing_value = y[col].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
             X[col] = imputed_values[:, 0]
 
     if len(df_null) < 0:
-        df[passed] = classifier.predict(X)
-        if passed in cols:
-            df[passed] = df[passed].map({0: False, 1: True})
+        df[passed_col] = rf_classifier.predict(X)
+        if passed_col in cols:
+            df[passed_col] = df[passed_col].map({0: False, 1: True})
         else:
             pass
     else:
@@ -303,15 +303,15 @@ def impute_continuous_missing_data(passed_col):
 
     label_encoder = LabelEncoder()
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+        if y[col].dtype == 'object' :
+            y[col] = label_encoder.fit_transform(y[col].astype(str))
 
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
+    imputer = imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
 
     for col in other_missing_cols:
         for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
+            cols_with_missing_value = y[col].value.reshape(-100, 100)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -323,23 +323,23 @@ def impute_continuous_missing_data(passed_col):
 
     print("MAE =", mean_absolute_error(y_test, y_pred), "\n")
     print("RMSE =", mean_squared_error(y_test, y_pred, squared=False), "\n")
-    print("R2 =", r2_score(y_test, y_pred), "\n")
+    print("R2 =", rf_regressor(y_test, y_pred), "\n")
 
     X = df_null.drop(passed_col, axis=1)
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+        if y[col].dtype == 'object' :
+            y[col] = label_encoder.fit_transform(y[col].astype(str))
 
     for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
+            cols_with_missing_value =y[col].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
             X[col] = imputed_values[:, 0]
-        else:
-            pass
+    else:
+        pass
 
     if len(df_null) > 0:
-        df_not_null[wrong_col] = rf_classifer.predict(X_train)
+        df_not_null[col] = rf_regressor.predict(X_train)
     else:
         pass
 
@@ -358,7 +358,7 @@ for col in missing_data_cols:
     print("Missing Values", col, ":", str(round((df[col].isnull().sum() / len(df)) * 100, 2))+"%")
     if col in categorical_cols:
         df[col] = impute_categorical_missing_data(col)
-    elif col in numeric_cols:
+    elif col in numerical_cols:
         df[col] = impute_continuous_missing_data(col)
     else:
         pass
@@ -375,7 +375,7 @@ cmap = ListedColormap(["#682F2F", "#9E726F", "#D6B2B1", "#B9C0C9", "#9F8A78", "#
 
 plt.figure(figsize=(10,8))
 
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot(color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(i)
@@ -398,7 +398,7 @@ plt.figure(figsize=(10,8))
 
 
 
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot( color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(col)
@@ -419,7 +419,7 @@ night_vision_palette = ["#00FF00", "#FF00FF", "#00FFFF", "#FFFF00", "#FF0000", "
 
 # Use the "night vision" palette for the plots
 plt.figure(figsize=(10, 8))
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot( color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(col)
@@ -461,9 +461,9 @@ y = df['num']
 """encode X data using separate label encoder for all categorical columns and save it for inverse transform"""
 # Task: Separate Encoder for all categorical and object columns and inverse transform at the end.
 Label_Encoder = LabelEncoder()
-for cols in Y.columns:
-    if Y[col].dtype == 'object' :
-        Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+for cols in y.columns:
+    if y[col].dtype == 'object' :
+        y[col] = Label_Encoder.fit_transform(y[col].astype(str))
     else:
         pass
 
@@ -474,13 +474,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_
 
 
 # improt ALl models.
-from sklearn. import LogisticRegressions
+from sklearn import LogisticRegressions
 from sklearn import KNN
 from sklearn import SVC_Classifier
 from sklearn import DecisionTree, plot_tree_regressor
 from sklearn import RandomForestRegressor, AdaBoost, GradientBoost
 from xgboost import XG
-from lightgbm import LGBM
 from sklearn import Gaussian
 
 #importing pipeline
@@ -502,15 +501,15 @@ warnings.filterwarnings('ignore')
 # create a list of models to evaluate
 
 models = [
-    ('Logistic Regression', LogisticReggression(random=42)),
+    ('Logistic Regression', LogisticRegressions(random=42)),
     ('Gradient Boosting', GradientBoost(random=42)),
     ('KNeighbors Classifier', KNN()),
     ('Decision Tree Classifier', DecisionTree(random=42)),
     ('AdaBoost Classifier', AdaBoost(random=42)),
-    ('Random Forest', RandomForest(random=42)),
-    ('XGboost Classifier', XGB(random=42)),
+    ('Random Forest', RandomForestRegressor(random=42)),
+    ('XGboost Classifier', XG(random=42)),
 
-    ('Support Vector Machine', SVC(random=42)),
+    ('Support Vector Machine',SVC_Classifier(random=42)),
 
     ('Naye base Classifier', Gaussian())
 
@@ -523,13 +522,13 @@ best_accuracy = 0.0
 #Iterate over the models and evaluate their performance
 for name, model in models:
     #create a pipeline for each model
-    pipeline = Pip([
+    pipeline = pipeline([
         # ('imputer', SimpleImputer(strategy='most_frequent)),
         #('Decoder', OneHotDecoder(handle_unknow='true'))
         ('model',name)
     ])
     # perform cross validation
-    scores = val_score(pipeline, X_test, y_trest, cv=5)
+    scores = scores(pipeline, X_test, y_test, cv=5)
     # Calculate mean accuracy
     mean_accuracy = scores.avg()
     #fit the pipeline on the training data
@@ -565,14 +564,14 @@ def evaluate_classification_models(X, y, categorical_columns):
     X_encoded = X.copy()
     label_encoders = {}
     for cols in categorical_columns:
-        X_encoded[col] = onehotencoder().fit_transform(Y[col])
+        X_encoded[col] = label_encoders().fit_transform(y[col])
 
     # Split data into train and test sets
-    X_train, X_val, y_val, y_val = train_test_split(Y_encoded, y, val_size=0.2, random_state=42)
+    X_train, X_val, y_val, y_val = train_test_split(y, val_size=0.2, random_state=42)
 
     # Define models
     models = {
-    "Logistic Regression": LogisticRegression(),
+    "Logistic Regression": LogisticRegressions(),
     "KNN": KNN(),
     "NB": Gaussian(),
     "SVM": SVC_Classifier(),
@@ -580,7 +579,7 @@ def evaluate_classification_models(X, y, categorical_columns):
     "Random Forest": RandomForestRegressor(),
     "XGBoost": XG(),
     "GradientBoosting": GradientBoost(),
-    "AdaBoost": AdaBoost)
+    "AdaBoost": AdaBoost()
     }
 
     # Train and evaluate models
@@ -615,10 +614,10 @@ def hyperparameter_tuning(X, y, categorical_columns, models):
     # Encode categorical columns
     X_encoded = X.copy()
     for cols in categorical_columns:
-        X_encoded[col] = onehotencoder().fit_transform(Y[col])
+        X_encoded[col] = Label_Encoder().fit_transform(y[col])
 
     # Split data into train and test sets
-    X_train, X_val, y_val, y_val = train_test_split(Y_encoded, y, val_size=0.2, random_state=42)
+    X_train, X_val, y_val, y_val = train_test_split(y, val_size=0.2, random_state=42)
 
     # Perform hyperparameter tuning for each model
     for model_name, model in models.items():
@@ -661,7 +660,7 @@ def hyperparameter_tuning(X, y, categorical_columns, models):
 
 # Define models dictionary
 models = {
-    "Logistic Regression": LogisticRegression(),
+    "Logistic Regression": LogisticRegressions(),
     "KNN": KNN(),
     "NB": Gaussian(),
     "SVM": SVC_Classifier(),
@@ -669,7 +668,7 @@ models = {
     "Random Forest": RandomForestRegressor(),
     "XGBoost": XG(),
     "GradientBoosting": GradientBoost(),
-    "AdaBoost": AdaBoost)
+    "AdaBoost": AdaBoost()
 }
 # Example usage:
 results = hyperparameter_tuning(X, y, categorical_cols, models)
