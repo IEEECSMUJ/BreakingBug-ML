@@ -9,11 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+from xgboost import XGBClassifier
 from yellowbrick.cluster import KElbowVisualizer
 from matplotlib.colors import ListedColormap
 
 # 3. To preprocess the data
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, OneHotEncoder
 from sklearn.impute import SimpleImputer, KNNImputer
 
 # 4. import Iterative imputer
@@ -21,28 +22,33 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
 # 5. Machine Learning
-from sklearn.model import train_test_split,GridSearch, cross_val
+#  incorrect syntax sklearn.model, GridSearch, cross_val
+#  Correct syntax is sklearn.model_selection, GridSearchCV, cross_val_score
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 
 # 6. For Classification task.
-from sklearn import LogisticRegressions
-from sklearn import KNN
-from sklearn import SVC_Classifier
-from sklearn import DecisionTree, plot_tree_regressor
-from sklearn import RandomForestRegressor, AdaBoost, GradientBoost
-from xgboost import XG
-from lightgbm import LGBM
-from sklearn import Gaussian
+# correct all the typo error while importing the Models
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, \
+    RandomForestRegressor
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from sklearn.naive_bayes import GaussianNB
 
 # 7. Metrics
-from sklearn.metrics import accuracy, confusion, classification
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, mean_absolute_error, \
+    mean_squared_error, r2_score
 
 # 8. Ignore warnings
 import warnings
 warnings.filterwarnings('ignore')
 
 
-
-df = pd.read_csv("/kaggle/input/heart-disease-data/heart_disease_uci.csv")
+# chanhe the dataset path to the local
+df = pd.read_csv('./dataset.csv')
 
 # print the first 5 rows of the dataframe
 df.head()
@@ -68,6 +74,7 @@ import seaborn as sns
 custom_colors = ["#FF5733", "#3366FF", "#33FF57"]  # Example colors, you can adjust as needed
 
 # Plot the histogram with custom colors
+#
 sns.histplot(df['age'], kde=True, color="#FF5733", palette=custom_colors)
 
 
@@ -80,7 +87,8 @@ plt.axvline(df['age'].mode()[0], color='Blue')
 # print the value of mean, median and mode of age column
 print('Mean', df['age'].mean())
 print('Median', df['age'].median())
-print('Mode', df['age'].mode())
+# mode of zero index [0]
+print('Mode', df['age'].mode()[0])
 
 
 # plot the histogram of age column using plotly and coloring this by sex
@@ -117,7 +125,8 @@ print(f'Males are {difference_percentage:.2f}% more than female in the data.')
 df.groupby('sex')['age'].value_counts()
 
 # find the unique values in the dataset column
-df['dataseet'].counts()
+# spelling mistake dataseet should be dataset
+df['dataset'].value_counts()
 
 # plot the countplot of dataset column
 fig =px.bar(df, x='dataset', color='sex')
@@ -132,12 +141,13 @@ fig = px.histogram(data_frame=df, x='age', color= 'dataset')
 fig.show()
 
 # print the mean median and mode of age column grouped by dataset column
+# Mean , median , mode of age by group
 print("___________________________________________________________")
-print ("Mean of the dataset: ",df('data')['age'].mean())
+print ("Mean of the age column grouped by dataset: ",df.groupby('dataset')['age'].mean())
 print("___________________________________________________________")
-print ("Median of the dataset: ",df('data')['age'].median())
+print ("Median of the age column grouped by dataset: ",df.groupby('dataset')['age'].median())
 print("___________________________________________________________")
-print ("Mode of the dataset: ",df('data')['age'].(pd.Series.mode))
+print ("Mode of the age column grouped by dataset: ",df.groupby('dataset')['age'].apply(lambda x: x.mode().tolist()))
 print("___________________________________________________________")
 
 # value count of cp column
@@ -185,10 +195,11 @@ df.info()
 imputer2 = IterativeImputer(max_iter=10, random_state=42)
 
 # fit transform on ca,oldpeak, thal,chol and thalch columns
-df['ca'] = imputer_transform(ca)
-df['oldpeak']= imputer_transform(oldpeak)
-df['chol'] = imputer_transform(chol)
-df['thalch'] = imputer_transform(thalch)
+# correct the fit_transform method
+df['ca'] = imputer2.fit_transform(df[['ca']])
+df['oldpeak']= imputer2.fit_transform(df[['oldpeak']])
+df['chol'] = imputer2.fit_transform(df[['chol']])
+df['thalch'] = imputer2.fit_transform(df[['thalch']])
 
 
 
@@ -203,21 +214,23 @@ df['thal'].value_counts()
 df.tail()
 
 # find missing values.
-df.null().sum()[df.null()()<0].values(ascending=true)
+# Case sensetive True not true
+# df.null().sum()[df.null()()<0].values(ascending=True)
+df.isnull().sum()[df.isnull().sum() > 0].sort_values(ascending=True)
 
 
 
 missing_data_cols = df.isnull().sum()[df.isnull().sum()>0].index.tolist()
 
-missing_data_cols
+
 
 # find categorical Columns
 cat_cols = df.select_dtypes(include='object').columns.tolist()
-cat_cols
+
 
 # find Numerical Columns
 Num_cols = df.select_dtypes(exclude='object').columns.tolist()
-Num_cols
+
 
 print(f'categorical Columns: {cat_cols}')
 print(f'numerical Columns: {Num_cols}')
@@ -240,20 +253,19 @@ def impute_categorical_missing_data(wrong_col):
     other_missing_cols = [col for col in missing_data_cols if col != passed_col]
 
     label_encoder = LabelEncoder()
-        for cols in Y.columns:
-           if Y[col].dtype == 'object' :
-               Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+        if y[cols].dtype == 'object' :
+            y[cols] = OneHotEncoder.fit_transform(y[cols].astype(str))
 
     if passed_col in bool_cols:
         y = label_encoder.fit_transform(y)
 
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
+    imputer = IterativeImputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
     for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
-            X[col] = imputed_values[:, 0]
-        else:
-            pass
+            cols_with_missing_value = y[cols].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
+            X[cols] = imputed_values[:, 0]
+
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -265,23 +277,23 @@ def impute_categorical_missing_data(wrong_col):
 
     acc_score = accuracy_score(y_test, y_pred)
 
-    print("The feature '"+ passed_col+ "' has been imputed with", round((acc_score * 100), 2), "accuracy\n")
+    print("The feature " + wrong_col + " has been imputed with", round((acc_score * 100), 2), "accuracy\n")
 
     X = df_null.drop(passed_col, axis=1)
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.columns:
+        if y[cols].dtype == 'object' :
+            y[cols] = OneHotEncoder.fit_transform(y[cols].astype(str))
 
     for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
-            X[col] = imputed_values[:, 0]
+            cols_with_missing_value = y[cols].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
+            X[cols] = imputed_values[:, 0]
 
     if len(df_null) < 0:
-        df[passed] = classifier.predict(X)
-        if passed in cols:
-            df[passed] = df[passed].map({0: False, 1: True})
+        df[wrong_col] = rf_classifier.predict(X)
+        if wrong_col in cols:
+            df[wrong_col] = df[wrong_col].map({0: False, 1: True})
         else:
             pass
     else:
@@ -303,15 +315,15 @@ def impute_continuous_missing_data(passed_col):
 
     label_encoder = LabelEncoder()
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for cols in y.column:
+        if y[cols].dtype == 'object':
+            y[cols] = OneHotEncoder.fit_transform(y[cols].astype(str))
 
-    imputer = Imputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
+    imputer = IterativeImputer(estimator=RandomForestRegressor(random_state=16), add_indicator=True)
 
     for col in other_missing_cols:
         for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
+            cols_with_missing_value = y[cols].value.reshape(-100, 100)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -327,19 +339,18 @@ def impute_continuous_missing_data(passed_col):
 
     X = df_null.drop(passed_col, axis=1)
 
-    for cols in Y.columns:
-        if Y[col].dtype == 'object' :
-            Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+    for col in y.columns:
+        if y[col].dtype == 'object' :
+            y[col] = OneHotEncoder.fit_transform(y[col].astype(str))
 
-    for cols in other_missing_cols:
-            cols_with_missing_value = Y[col].value.reshape(-100, 100)
-            imputed_values = iterative_imputer.fit_transform(col_with_missing_values)
+    for col in other_missing_cols:
+            cols_with_missing_value = y[col].value.reshape(-100, 100)
+            imputed_values = imputer.fit_transform(cols_with_missing_value)
             X[col] = imputed_values[:, 0]
-        else:
-            pass
+
 
     if len(df_null) > 0:
-        df_not_null[wrong_col] = rf_classifer.predict(X_train)
+        df_not_null[passed_col] = RandomForestClassifier.predict(X_train)
     else:
         pass
 
@@ -358,7 +369,7 @@ for col in missing_data_cols:
     print("Missing Values", col, ":", str(round((df[col].isnull().sum() / len(df)) * 100, 2))+"%")
     if col in categorical_cols:
         df[col] = impute_categorical_missing_data(col)
-    elif col in numeric_cols:
+    elif col in numerical_cols:
         df[col] = impute_continuous_missing_data(col)
     else:
         pass
@@ -375,7 +386,7 @@ cmap = ListedColormap(["#682F2F", "#9E726F", "#D6B2B1", "#B9C0C9", "#9F8A78", "#
 
 plt.figure(figsize=(10,8))
 
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot(color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(i)
@@ -398,7 +409,7 @@ plt.figure(figsize=(10,8))
 
 
 
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot( color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(col)
@@ -419,7 +430,7 @@ night_vision_palette = ["#00FF00", "#FF00FF", "#00FFFF", "#FFFF00", "#FF0000", "
 
 # Use the "night vision" palette for the plots
 plt.figure(figsize=(10, 8))
-for i, col in enumerate(cols):
+for i, col in enumerate(col):
     plt.subplot(3,2)
     sns.boxenplot( color=palette[i % len(palette)])  # Use modulo to cycle through colors
     plt.title(col)
@@ -461,9 +472,9 @@ y = df['num']
 """encode X data using separate label encoder for all categorical columns and save it for inverse transform"""
 # Task: Separate Encoder for all categorical and object columns and inverse transform at the end.
 Label_Encoder = LabelEncoder()
-for cols in Y.columns:
-    if Y[col].dtype == 'object' :
-        Y[col] = onehotencoder.fit_transform(Y[col].astype(str))
+for cols in y.columns:
+    if y[cols].dtype == 'object':
+        y[cols] = OneHotEncoder.fit_transform(y[cols].astype(str))
     else:
         pass
 
@@ -474,14 +485,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_
 
 
 # improt ALl models.
-from sklearn. import LogisticRegressions
-from sklearn import KNN
-from sklearn import SVC_Classifier
-from sklearn import DecisionTree, plot_tree_regressor
-from sklearn import RandomForestRegressor, AdaBoost, GradientBoost
-from xgboost import XG
-from lightgbm import LGBM
-from sklearn import Gaussian
+from sklearn.model_selection import LogisticRegressions
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+import xgboost as xgb
+import lightgbm as lgb
+from sklearn.naive_bayes import GaussianNB
 
 #importing pipeline
 from sklearn.pipeline import Pipeline
@@ -502,17 +514,15 @@ warnings.filterwarnings('ignore')
 # create a list of models to evaluate
 
 models = [
-    ('Logistic Regression', LogisticReggression(random=42)),
-    ('Gradient Boosting', GradientBoost(random=42)),
-    ('KNeighbors Classifier', KNN()),
-    ('Decision Tree Classifier', DecisionTree(random=42)),
-    ('AdaBoost Classifier', AdaBoost(random=42)),
-    ('Random Forest', RandomForest(random=42)),
-    ('XGboost Classifier', XGB(random=42)),
-
-    ('Support Vector Machine', SVC(random=42)),
-
-    ('Naye base Classifier', Gaussian())
+    ('Logistic Regression', LogisticRegression()),
+    ('Gradient Boosting', GradientBoostingClassifier()),
+    ('KNeighbors Classifier', KNeighborsClassifier()),
+    ('Decision Tree Classifier', DecisionTreeClassifier()),
+    ('AdaBoost Classifier', AdaBoostClassifier()),
+    ('Random Forest', RandomForestClassifier()),
+    ('XGboost Classifier', xgb()),
+    ('Support Vector Machine', SVC()),
+    ('Naye base Classifier', GaussianNB())
 
 
 ]
@@ -523,17 +533,17 @@ best_accuracy = 0.0
 #Iterate over the models and evaluate their performance
 for name, model in models:
     #create a pipeline for each model
-    pipeline = Pip([
-        # ('imputer', SimpleImputer(strategy='most_frequent)),
-        #('Decoder', OneHotDecoder(handle_unknow='true'))
-        ('model',name)
+    pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(handle_unknown='ignore')),
+        ('model', name)
     ])
     # perform cross validation
-    scores = val_score(pipeline, X_test, y_trest, cv=5)
+    scores = cross_val_score(pipeline, X_test, y_test, cv=5)
     # Calculate mean accuracy
     mean_accuracy = scores.avg()
     #fit the pipeline on the training data
-    pipeline.fitting(X_train, y_test)
+    pipeline.fit(X_train, y_test)
     # make prediction on the test data
     y_pred = pipeline.predict(X_test)
 
@@ -542,7 +552,7 @@ for name, model in models:
 
     #print the performance metrics
     print("Model", name)
-    print("Cross Validatino accuracy: ", mean_accuracy)
+    print("Cross Validation accuracy: ", mean_accuracy)
     print("Test Accuracy: ", accuracy)
     print()
 
@@ -565,22 +575,22 @@ def evaluate_classification_models(X, y, categorical_columns):
     X_encoded = X.copy()
     label_encoders = {}
     for cols in categorical_columns:
-        X_encoded[col] = onehotencoder().fit_transform(Y[col])
+        X_encoded[col] = OneHotEncoder().fit_transform(y[col])
 
     # Split data into train and test sets
-    X_train, X_val, y_val, y_val = train_test_split(Y_encoded, y, val_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_encoded, y, val_size=0.2, random_state=42)
 
     # Define models
     models = {
-    "Logistic Regression": LogisticRegression(),
-    "KNN": KNN(),
-    "NB": Gaussian(),
-    "SVM": SVC_Classifier(),
-    "Decision Tree": DecisionTree(),
-    "Random Forest": RandomForestRegressor(),
-    "XGBoost": XG(),
-    "GradientBoosting": GradientBoost(),
-    "AdaBoost": AdaBoost)
+        "Logistic Regression": LogisticRegression(),
+        "KNN": KNeighborsClassifier(),
+        "NB": GaussianNB(),
+        "SVM": SVC(),
+        "Decision Tree": DecisionTreeClassifier(),
+        "Random Forest": RandomForestClassifier(),
+        "XGBoost": XGBClassifier(),  # Corrected initialization
+        "GradientBoosting": GradientBoostingClassifier(),
+        "AdaBoost": AdaBoostClassifier()
     }
 
     # Train and evaluate models
@@ -614,11 +624,11 @@ def hyperparameter_tuning(X, y, categorical_columns, models):
 
     # Encode categorical columns
     X_encoded = X.copy()
-    for cols in categorical_columns:
-        X_encoded[col] = onehotencoder().fit_transform(Y[col])
+    for col in categorical_columns:
+        X_encoded[col] = OneHotEncoder().fit_transform(y[col])
 
     # Split data into train and test sets
-    X_train, X_val, y_val, y_val = train_test_split(Y_encoded, y, val_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_encoded, y, val_size=0.2, random_state=42)
 
     # Perform hyperparameter tuning for each model
     for model_name, model in models.items():
@@ -662,15 +672,18 @@ def hyperparameter_tuning(X, y, categorical_columns, models):
 # Define models dictionary
 models = {
     "Logistic Regression": LogisticRegression(),
-    "KNN": KNN(),
-    "NB": Gaussian(),
-    "SVM": SVC_Classifier(),
-    "Decision Tree": DecisionTree(),
-    "Random Forest": RandomForestRegressor(),
-    "XGBoost": XG(),
-    "GradientBoosting": GradientBoost(),
-    "AdaBoost": AdaBoost)
+    "KNN": KNeighborsClassifier(),
+    "NB": GaussianNB(),
+    "SVM": SVC(),
+    "Decision Tree": DecisionTreeClassifier(),
+    "Random Forest": RandomForestClassifier(),
+    "XGBoost": XGBClassifier(),  # Corrected initialization
+    "GradientBoosting": GradientBoostingClassifier(),
+    "AdaBoost": AdaBoostClassifier()
 }
+
+
+
 # Example usage:
 results = hyperparameter_tuning(X, y, categorical_cols, models)
 for model_name, result in results.items():
