@@ -124,3 +124,4 @@ Best Model Test Accuracy: 0.6413
 <br>
 <img src="https://images.prismic.io/ieeemuj/Zqu58B5LeNNTxuyF_cs-logo.png?auto=format,compress" alt="IEEE CS MUJ Logo">
 <br>
+Team - KNOCOS
